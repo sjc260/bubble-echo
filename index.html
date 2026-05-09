@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bubble Echo — Prototipo UX</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink: #1a1a1a;
+  --muted: #6b6555;
+  --soft: #a09886;
+  --pink-deep: #e88aa6;
+  --card: rgba(255,255,255,0.65);
+  --card-border: rgba(255,255,255,0.7);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(165deg, #FBEAF0 0%, #FAEEDA 35%, #E6F1FB 75%, #EAF3DE 100%);
+  min-height: 100vh;
+  color: var(--ink);
+  padding: 60px 24px 80px;
+}
+
+/* Bolle decorative di sfondo */
+.bg-bubbles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.bg-bubbles span { position: absolute; border-radius: 50%; opacity: 0.5; }
+.bg-bubbles span::before {
+  content: ''; position: absolute; top: 14%; left: 20%;
+  width: 28%; height: 20%; background: rgba(255,255,255,0.7);
+  border-radius: 50%; filter: blur(3px);
+}
+.bg-bubbles span::after {
+  content: ''; position: absolute; inset: 0;
+  border-radius: 50%; border: 1px solid rgba(255,255,255,0.5);
+}
+@keyframes drift1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(12px,-18px); } }
+@keyframes drift2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-14px,-12px); } }
+@keyframes drift3 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(10px,14px); } }
+@keyframes logoBreath {
+  0%,100% { transform: scale(1); box-shadow: 0 16px 40px rgba(244,168,184,0.35); }
+  50%     { transform: scale(1.04); box-shadow: 0 20px 48px rgba(244,168,184,0.45); }
+}
+
+.container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; }
+
+/* Hero */
+.hero { text-align: center; margin-bottom: 60px; }
+.logo-bubble {
+  width: 110px; height: 110px;
+  margin: 0 auto 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, rgba(255,255,255,0.85) 0%, rgba(255,224,230,0.85) 30%, rgba(244,168,184,0.85) 65%, rgba(212,83,126,0.7) 100%);
+  animation: logoBreath 4.5s ease-in-out infinite;
+  position: relative;
+}
+.logo-bubble::before {
+  content: ''; position: absolute; top: 12%; left: 18%;
+  width: 32%; height: 24%; background: rgba(255,255,255,0.9);
+  border-radius: 50%; filter: blur(4px);
+}
+.logo-bubble::after {
+  content: ''; position: absolute; inset: 0;
+  border-radius: 50%; border: 2px solid rgba(255,255,255,0.5);
+}
+h1 {
+  font-family: Georgia, serif;
+  font-size: 46px; font-style: italic; font-weight: 500;
+  letter-spacing: -0.5px; margin-bottom: 12px;
+}
+.tagline {
+  font-family: Georgia, serif; font-style: italic;
+  font-size: 17px; color: var(--muted); margin-bottom: 24px;
+}
+.meta {
+  font-size: 12px; color: var(--soft);
+  letter-spacing: 1.4px; text-transform: uppercase;
+}
+.meta strong { color: var(--muted); font-weight: 600; }
+.authors { margin-top: 14px; font-size: 13px; color: var(--muted); font-style: italic; }
+
+/* Intro */
+.intro {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  padding: 28px 32px;
+  margin-bottom: 50px;
+  font-size: 15px; line-height: 1.65; color: var(--muted);
+}
+.intro strong { color: var(--ink); }
+
+/* Section title */
+.section-label { text-align: center; margin-bottom: 30px; }
+.section-label .kicker {
+  display: inline-block; font-size: 10px;
+  letter-spacing: 1.8px; text-transform: uppercase;
+  color: var(--soft); background: rgba(255,255,255,0.55);
+  padding: 5px 14px; border-radius: 12px;
+  backdrop-filter: blur(6px); margin-bottom: 14px;
+}
+.section-label h2 {
+  font-family: Georgia, serif; font-style: italic;
+  font-size: 28px; font-weight: 500; color: var(--ink);
+}
+.section-label .sub {
+  font-size: 14px; color: var(--muted);
+  margin-top: 8px; font-style: italic;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 290px));
+  gap: 26px; margin-top: 40px;
+  justify-content: center;
+}
+
+/* Card */
+.card {
+  background: rgba(255,255,255,0.65);
+  border: 1px solid rgba(255,255,255,0.7);
+  border-radius: 22px;
+  padding: 18px 18px 22px;
+  text-decoration: none; color: inherit;
+  display: flex; flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+  backdrop-filter: blur(8px);
+  position: relative; overflow: hidden;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.85);
+}
+.card-num {
+  font-family: Georgia, serif; font-style: italic;
+  font-size: 12px; color: var(--soft);
+  letter-spacing: 1px; margin-bottom: 10px; padding: 0 4px;
+}
+
+/* THUMBNAIL con iframe scalato:
+   l'iframe carica la schermata reale (380×760).
+   Lo scaliamo a 0.66 → ~250×500.
+   Il container è alto 480 e largo quanto la card. */
+.card-thumb {
+  width: 100%;
+  height: 515px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+  background: #f0eee7;
+  border: 1px solid rgba(0,0,0,0.04);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
+}
+.thumb-frame {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 444px;
+  height: 824px;
+  transform-origin: top center;
+  transform: translateX(-50%) scale(0.62);
+  pointer-events: none;
+}
+.thumb-frame iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  pointer-events: none;
+}
+/* Overlay che intercetta tutti i click così la card è cliccabile */
+.thumb-cover {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  z-index: 5;
+  cursor: pointer;
+}
+.thumb-tag {
+  position: absolute;
+  bottom: 12px; right: 12px;
+  background: rgba(255,255,255,0.92);
+  border-radius: 50%;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--muted);
+  backdrop-filter: blur(6px);
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card h3 {
+  font-family: Georgia, serif; font-style: italic;
+  font-size: 19px; font-weight: 500;
+  margin-bottom: 6px; padding: 0 4px;
+}
+.card p {
+  font-size: 13px; color: var(--muted);
+  line-height: 1.5; flex: 1; padding: 0 4px;
+}
+.card-arrow {
+  margin-top: 14px;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--pink-deep); padding: 0 4px;
+}
+.card-arrow i { transition: transform 0.25s ease; }
+.card:hover .card-arrow i { transform: translateX(4px); }
+
+footer {
+  margin-top: 70px; text-align: center;
+  font-size: 11px; color: var(--soft);
+  font-style: italic; letter-spacing: 0.3px; line-height: 1.7;
+}
+
+@media (max-width: 600px) {
+  body { padding: 40px 18px 60px; }
+  h1 { font-size: 34px; }
+  .intro { padding: 22px 22px; font-size: 14px; }
+  .section-label h2 { font-size: 22px; }
+  .grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-bubbles">
+  <span style="width: 90px; height: 90px; top: 8%; left: 6%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.7), rgba(255,233,163,0.5) 60%, rgba(246,216,120,0.3)); animation: drift1 14s ease-in-out infinite;"></span>
+  <span style="width: 60px; height: 60px; top: 18%; right: 8%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.7), rgba(184,220,236,0.5) 60%, rgba(149,196,220,0.3)); animation: drift2 16s ease-in-out infinite;"></span>
+  <span style="width: 110px; height: 110px; top: 55%; left: 4%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.6), rgba(192,224,176,0.45) 60%, rgba(152,200,144,0.3)); animation: drift3 18s ease-in-out infinite;"></span>
+  <span style="width: 70px; height: 70px; top: 70%; right: 6%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.7), rgba(255,200,158,0.5) 60%, rgba(244,168,120,0.3)); animation: drift1 15s ease-in-out infinite;"></span>
+  <span style="width: 50px; height: 50px; top: 35%; right: 18%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.65), rgba(255,192,207,0.5) 60%, rgba(244,168,184,0.3)); animation: drift2 13s ease-in-out infinite;"></span>
+  <span style="width: 40px; height: 40px; top: 88%; left: 38%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.6), rgba(255,233,163,0.45) 60%, rgba(246,216,120,0.25)); animation: drift3 17s ease-in-out infinite;"></span>
+</div>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="logo-bubble"></div>
+    <h1>Bubble Echo</h1>
+    <p class="tagline">Custodisci i tuoi momenti più belli con la voce.</p>
+    <p class="meta"><strong>Allegato B</strong> · Prototipo visivo UX · iOS 380×760pt</p>
+    <p class="authors">Stephanie Cavaciuti · Giulia Curci · Claudia di Terlizzi</p>
+    <p class="meta" style="margin-top: 6px;">Psicotecnologie per il Benessere · A.A. 2025/2026</p>
+  </div>
+
+  <div class="intro">
+    <p>Bubble Echo è una <strong>app iOS di voice journaling emotivo</strong> che custodisce i momenti positivi quotidiani sotto forma di bolle colorate. Ogni bolla raccoglie una registrazione vocale, un'emozione e i suoi metadati: si può riascoltare, condividere e ritrovare nel proprio universo personale.</p>
+    <p style="margin-top: 12px;">Il prototipo poggia su tre costrutti psicologici: il <strong>savouring</strong>, il <strong>Positive Mental Time Travel (PMTT)</strong> e la <strong>preservazione condivisa della memoria emotiva</strong>. Echo, l'assistente vocale empatico dell'app, accompagna l'utente con prompt sensoriali rispettando il flusso naturale del ricordo.</p>
+  </div>
+
+  <div class="section-label">
+    <span class="kicker">Le otto schermate</span>
+    <h2>Il flusso d'uso completo</h2>
+    <p class="sub">Tocca una schermata per aprirla a tutto schermo.</p>
+  </div>
+
+  <div class="grid">
+
+    <a class="card" href="0welcome.html">
+      <span class="card-num">01 · Onboarding</span>
+      <div class="card-thumb">
+        <div class="thumb-frame"><iframe src="0welcome.html" loading="lazy" scrolling="no" tabindex="-1"></iframe></div>
+        <div class="thumb-cover"></div>
+        <div class="thumb-tag"><i class="ti ti-home"></i></div>
+      </div>
+      <h3>Benvenuto/a</h3>
+      <p>Il primo accesso: tagline, le quattro azioni principali, invito a creare il profilo.</p>
+      <span class="card-arrow">apri schermata <i class="ti ti-arrow-right"></i></span>
+    </a>
+
+    <a class="card" href="1home.html">
+      <span class="card-num">02 · Home</span>
+      <div class="card-thumb">
+        <div class="thumb-frame"><iframe src="1home.html" loading="lazy" scrolling="no" tabindex="-1"></iframe></div>
+        <div class="thumb-cover"></div>
+        <div class="thumb-tag"><i class="ti ti-planet"></i></div>
+      </div>
+      <h3>Home</h3>
+      <p>Tre vie nell'universo: creare un nuovo ricordo, esplorare l'archivio, condividere una bolla.</p>
+      <span class="card-arrow">apri schermata <i class="ti ti-arrow-right"></i></span>
+    </a>
+
+    <a class="card" href="2registeringmemory.html">
+      <span class="card-num">03 · Registrazione</span>
+      <div class="card-thumb">
+        <div class="thumb-frame"><iframe src="2registeringmemory.html" loading="lazy" scrolling="no" tabindex="-1"></iframe></div>
+        <div class="thumb-cover"></div>
+        <div class="thumb-tag"><i class="ti ti-microphone"></i></div>
+      </div>
+      <h3>Registrazione</h3>
+      <p>Echo accompagna l'utente con un prompt sensoriale. La voce diventa particelle che si espandono dal centro.</p>
+      <span class="card-arrow">apri schermata <i class="ti ti-arrow-right"></i></span>
+    </a>
+
+    <a class="card" href="3seleziona-emozione.html">
+      <span class="card-num">04 · Selezione emozione</span>
+      <div class="card-thumb">
+        <div class="thumb-frame"><iframe src="3seleziona-emozione.html" loading="lazy" scrolling="no" tabindex="-1"></iframe></div>
+        <div class="thumb-cover"></div>
+        <div class="thumb-tag"><i class="ti ti-palette"></i></div>
+      </div>
+      <h3>Selezione emozione</h3>
+      <p>Sette colori, sette famiglie. La palette segue lo studio psicologico colore-emozione del midterm.</p>
+      <span class="card-arrow">apri schermata <i class="ti ti-arrow-right"></i></span>
+    </a>
+
+    <a class="card" href="4salva_la_tua_bolla.html">
+      <span class="card-num">05 · Salvataggio</span>
+      <div class="card-thumb">
+        <div class="thumb-frame"><iframe src="4salva_la_tua_bolla.html" loading="lazy" scrolling="no" tabindex="-1"></iframe></div>
+        <div class="thumb-cover"></div>
+        <div class="thumb-tag"><i class="ti ti-check"></i></div>
+      </div>
+      <h3>Salva la tua bolla</h3>
+      <p>La bolla prende il colore dell'emozione scelta. L'utente può darle un nome prima di salvarla.</p>
+      <span class="card-arrow">apri schermata <i class="ti ti-arrow-right"></i></span>
+    </a>
+
+    <a class="card" href="5dettagliobollaviviilricordo.html">
+      <span class="card-num">06 · Dettaglio</span>
+      <div class="card-thumb">
+        <div class="thumb-frame"><iframe src="5dettagliobollaviviilricordo.html" loading="lazy" scrolling="no" tabindex="-1"></iframe></div>
+        <div class="thumb-cover"></div>
+        <div class="thumb-tag"><i class="ti ti-player-play-filled"></i></div>
+      </div>
+      <h3>Dettaglio bolla</h3>
+      <p>Riascolto della bolla con metadati e suggerimenti di altri ricordi correlati per stimolare il PMTT.</p>
+      <span class="card-arrow">apri schermata <i class="ti ti-arrow-right"></i></span>
+    </a>
+
+    <a class="card" href="6archivio-universocercaunabolla.html">
+      <span class="card-num">07 · Archivio</span>
+      <div class="card-thumb">
+        <div class="thumb-frame"><iframe src="6archivio-universocercaunabolla.html" loading="lazy" scrolling="no" tabindex="-1"></iframe></div>
+        <div class="thumb-cover"></div>
+        <div class="thumb-tag"><i class="ti ti-search"></i></div>
+      </div>
+      <h3>Archivio universo</h3>
+      <p>Tutti i ricordi galleggiano insieme: i recenti in primo piano, i più vecchi sfumati sullo sfondo.</p>
+      <span class="card-arrow">apri schermata <i class="ti ti-arrow-right"></i></span>
+    </a>
+
+    <a class="card" href="7condividi.html">
+      <span class="card-num">08 · Condividi</span>
+      <div class="card-thumb">
+        <div class="thumb-frame"><iframe src="7condividi.html" loading="lazy" scrolling="no" tabindex="-1"></iframe></div>
+        <div class="thumb-cover"></div>
+        <div class="thumb-tag"><i class="ti ti-send"></i></div>
+      </div>
+      <h3>Condividi</h3>
+      <p>Selezione della bolla e del destinatario. Onde concentriche indicano che è pronta a partire.</p>
+      <span class="card-arrow">apri schermata <i class="ti ti-arrow-right"></i></span>
+    </a>
+
+  </div>
+
+  <footer>
+    <p>Bubble Echo · Allegato B · Mock-up / Prototipo visivo UX</p>
+    <p style="margin-top: 4px;">Università Cattolica del Sacro Cuore · Laurea Magistrale in Psicologia per il Benessere</p>
+  </footer>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bubble Echo — Registrazione</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f5f4ef;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+/* Scena iPhone */
+.scene {
+  position: relative;
+  width: 380px;
+  height: 760px;
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.12), 0 0 0 12px #1a1a1a, 0 0 0 14px #2a2a2a;
+}
+
+/* Sfondo che sfuma tra le 7 emozioni - 70s ciclo lento */
+@keyframes emotionShift {
+  0%   { background: linear-gradient(180deg, #fff5e0 0%, #ffe8b5 100%); }   /* gioia */
+  14%  { background: linear-gradient(180deg, #ffe8c8 0%, #ffd09a 100%); }   /* gratitudine */
+  28%  { background: linear-gradient(180deg, #ffd8df 0%, #ffb8c8 100%); }   /* amore */
+  42%  { background: linear-gradient(180deg, #ffe0e6 0%, #ffc8d4 100%); }   /* tenerezza */
+  57%  { background: linear-gradient(180deg, #d8ecf6 0%, #b0d4e6 100%); }   /* serenità */
+  71%  { background: linear-gradient(180deg, #ffe8c0 0%, #f4c878 100%); }   /* orgoglio */
+  85%  { background: linear-gradient(180deg, #e8dcf4 0%, #c8b4e0 100%); }   /* meraviglia */
+  100% { background: linear-gradient(180deg, #fff5e0 0%, #ffe8b5 100%); }   /* gioia (loop) */
+}
+.bg-shift {
+  position: absolute;
+  inset: 0;
+  animation: emotionShift 28s ease-in-out infinite;
+  z-index: 0;
+}
+
+/* Notch iPhone */
+.notch {
+  position: absolute;
+  top: 12px; left: 50%;
+  transform: translateX(-50%);
+  width: 110px; height: 28px;
+  background: #1a1a1a;
+  border-radius: 20px;
+  z-index: 100;
+}
+
+/* Status bar */
+.status-bar {
+  position: absolute;
+  top: 18px; left: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 32px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  z-index: 99;
+}
+
+/* Bottone close in alto a sinistra */
+.close-btn {
+  position: absolute;
+  top: 60px; left: 24px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #555;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,0.04);
+  z-index: 50;
+  transition: all 0.2s;
+}
+.close-btn:hover { background: #fff; }
+
+/* Indicatore di stato registrazione */
+.rec-indicator {
+  position: absolute;
+  top: 64px; right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(8px);
+  padding: 7px 14px;
+  border-radius: 20px;
+  z-index: 50;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.rec-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #e74c3c;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+.rec-indicator span {
+  font-size: 11px;
+  color: #444;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Prompt AI */
+.ai-prompt {
+  position: absolute;
+  top: 130px; left: 0; right: 0;
+  padding: 0 36px;
+  text-align: center;
+  z-index: 10;
+}
+.ai-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #8a8474;
+  margin-bottom: 14px;
+  background: rgba(255,255,255,0.55);
+  padding: 5px 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+}
+.ai-label .dot-anim {
+  display: inline-flex;
+  gap: 2px;
+}
+.ai-label .dot-anim span {
+  width: 3px; height: 3px;
+  background: #8a8474;
+  border-radius: 50%;
+  animation: dotWave 1.4s ease-in-out infinite;
+}
+.ai-label .dot-anim span:nth-child(2) { animation-delay: 0.2s; }
+.ai-label .dot-anim span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotWave {
+  0%, 100% { opacity: 0.3; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+.ai-text {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 22px;
+  font-style: italic;
+  color: #1a1a1a;
+  line-height: 1.4;
+  letter-spacing: -0.2px;
+}
+.ai-subtext {
+  font-size: 13px;
+  color: #6b6555;
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+/* Cerchio di particelle al centro */
+.particle-stage {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 280px; height: 280px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Anello centrale "core" che pulsa */
+.core {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.3) 60%, transparent 100%);
+  animation: corePulse 2.2s ease-in-out infinite;
+  filter: blur(2px);
+}
+@keyframes corePulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+  50% { transform: translate(-50%, -50%) scale(1.25); opacity: 1; }
+}
+
+/* Onde concentriche */
+.ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.6);
+  transform: translate(-50%, -50%);
+  animation: ringExpand 3.5s ease-out infinite;
+}
+.ring.r2 { animation-delay: 0.7s; border-color: rgba(255,255,255,0.5); }
+.ring.r3 { animation-delay: 1.4s; border-color: rgba(255,255,255,0.4); }
+.ring.r4 { animation-delay: 2.1s; border-color: rgba(255,255,255,0.3); }
+@keyframes ringExpand {
+  0% { width: 60px; height: 60px; opacity: 0.8; border-width: 2px; }
+  100% { width: 280px; height: 280px; opacity: 0; border-width: 0.5px; }
+}
+
+/* Particelle che si espandono dal centro */
+.particle {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 0 8px rgba(255,255,255,0.6);
+  animation: particleFly 4s ease-out infinite;
+  --tx: 0px;
+  --ty: 0px;
+}
+@keyframes particleFly {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* Posizioni e ritardi delle particelle - distribuite a 360° */
+.p1  { --tx: 110px;  --ty: 0px;    animation-delay: 0s;    width: 5px; height: 5px; }
+.p2  { --tx: 95px;   --ty: 55px;   animation-delay: 0.2s;  width: 4px; height: 4px; }
+.p3  { --tx: 55px;   --ty: 95px;   animation-delay: 0.4s;  width: 6px; height: 6px; }
+.p4  { --tx: 0px;    --ty: 110px;  animation-delay: 0.6s;  width: 4px; height: 4px; }
+.p5  { --tx: -55px;  --ty: 95px;   animation-delay: 0.8s;  width: 5px; height: 5px; }
+.p6  { --tx: -95px;  --ty: 55px;   animation-delay: 1.0s;  width: 3px; height: 3px; }
+.p7  { --tx: -110px; --ty: 0px;    animation-delay: 1.2s;  width: 5px; height: 5px; }
+.p8  { --tx: -95px;  --ty: -55px;  animation-delay: 1.4s;  width: 4px; height: 4px; }
+.p9  { --tx: -55px;  --ty: -95px;  animation-delay: 1.6s;  width: 6px; height: 6px; }
+.p10 { --tx: 0px;    --ty: -110px; animation-delay: 1.8s;  width: 4px; height: 4px; }
+.p11 { --tx: 55px;   --ty: -95px;  animation-delay: 2.0s;  width: 5px; height: 5px; }
+.p12 { --tx: 95px;   --ty: -55px;  animation-delay: 2.2s;  width: 3px; height: 3px; }
+.p13 { --tx: 130px;  --ty: 30px;   animation-delay: 0.3s;  width: 4px; height: 4px; }
+.p14 { --tx: 30px;   --ty: 130px;  animation-delay: 0.9s;  width: 3px; height: 3px; }
+.p15 { --tx: -130px; --ty: -30px;  animation-delay: 1.5s;  width: 4px; height: 4px; }
+.p16 { --tx: -30px;  --ty: -130px; animation-delay: 2.1s;  width: 3px; height: 3px; }
+.p17 { --tx: 80px;   --ty: -80px;  animation-delay: 0.5s;  width: 5px; height: 5px; }
+.p18 { --tx: -80px;  --ty: 80px;   animation-delay: 1.7s;  width: 5px; height: 5px; }
+.p19 { --tx: 70px;   --ty: 100px;  animation-delay: 1.1s;  width: 3px; height: 3px; }
+.p20 { --tx: -70px;  --ty: -100px; animation-delay: 2.3s;  width: 3px; height: 3px; }
+
+/* Timer */
+.timer {
+  position: absolute;
+  bottom: 220px; left: 0; right: 0;
+  text-align: center;
+  z-index: 10;
+}
+.timer-value {
+  font-family: Georgia, serif;
+  font-size: 36px;
+  font-weight: 300;
+  color: #1a1a1a;
+  letter-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.timer-label {
+  font-size: 11px;
+  color: #6b6555;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Suggerimenti sensoriali fluttuanti (riprendono il prompt) */
+.sensory-hints {
+  position: absolute;
+  bottom: 158px; left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 10;
+  padding: 0 32px;
+}
+.hint-chip {
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(8px);
+  padding: 6px 12px;
+  border-radius: 14px;
+  font-size: 11px;
+  color: #6b6555;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(255,255,255,0.5);
+  animation: hintFloat 3s ease-in-out infinite;
+}
+.hint-chip:nth-child(2) { animation-delay: 0.5s; }
+.hint-chip:nth-child(3) { animation-delay: 1s; }
+.hint-chip i { font-size: 12px; }
+@keyframes hintFloat {
+  0%, 100% { transform: translateY(0); opacity: 0.8; }
+  50% { transform: translateY(-3px); opacity: 1; }
+}
+
+/* Controlli registrazione in basso */
+.controls {
+  position: absolute;
+  bottom: 60px; left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 36px;
+  z-index: 20;
+}
+
+.control-btn {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #555;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  transition: all 0.2s;
+}
+.control-btn:hover { transform: scale(1.05); background: #fff; }
+.control-btn .label-below {
+  position: absolute;
+  bottom: -22px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #6b6555;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+.control-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Bottone stop centrale - più grande e dominante */
+.stop-btn {
+  width: 84px; height: 84px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a1a1a, #333);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+  transition: all 0.2s;
+  position: relative;
+}
+.stop-btn:hover { transform: scale(1.04); }
+.stop-square {
+  width: 26px; height: 26px;
+  background: #fff;
+  border-radius: 5px;
+}
+.stop-btn .label-below {
+  position: absolute;
+  bottom: -22px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #1a1a1a;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Home indicator */
+.home-indicator {
+  position: absolute;
+  bottom: 6px; left: 50%;
+  transform: translateX(-50%);
+  width: 130px; height: 4px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  z-index: 70;
+  opacity: 0.4;
+}
+</style>
+</head>
+<body>
+<div class="scene">
+  <!-- Sfondo che sfuma tra le 7 emozioni -->
+  <div class="bg-shift"></div>
+
+  <div class="notch"></div>
+  <div class="status-bar">
+    <span>9:41</span>
+    <span><i class="ti ti-wifi"></i> &nbsp;<i class="ti ti-battery-filled"></i></span>
+  </div>
+
+  <!-- Bottone chiudi -->
+  <div class="close-btn"><i class="ti ti-x"></i></div>
+
+  <!-- Indicatore registrazione attiva -->
+  <div class="rec-indicator">
+    <div class="rec-dot"></div>
+    <span>In ascolto</span>
+  </div>
+
+  <!-- Prompt AI -->
+  <div class="ai-prompt">
+    <div class="ai-label">
+      <i class="ti ti-sparkles" style="font-size: 11px;"></i>
+      <span>Echo</span>
+      <span class="dot-anim"><span></span><span></span><span></span></span>
+    </div>
+    <div class="ai-text">"Cosa stai sentendo,<br>vedendo, respirando?"</div>
+  </div>
+
+  <!-- Cerchio di particelle al centro -->
+  <div class="particle-stage">
+    <!-- Onde concentriche -->
+    <div class="ring r1"></div>
+    <div class="ring r2"></div>
+    <div class="ring r3"></div>
+    <div class="ring r4"></div>
+
+    <!-- Core pulsante -->
+    <div class="core"></div>
+
+    <!-- 20 particelle -->
+    <div class="particle p1"></div>
+    <div class="particle p2"></div>
+    <div class="particle p3"></div>
+    <div class="particle p4"></div>
+    <div class="particle p5"></div>
+    <div class="particle p6"></div>
+    <div class="particle p7"></div>
+    <div class="particle p8"></div>
+    <div class="particle p9"></div>
+    <div class="particle p10"></div>
+    <div class="particle p11"></div>
+    <div class="particle p12"></div>
+    <div class="particle p13"></div>
+    <div class="particle p14"></div>
+    <div class="particle p15"></div>
+    <div class="particle p16"></div>
+    <div class="particle p17"></div>
+    <div class="particle p18"></div>
+    <div class="particle p19"></div>
+    <div class="particle p20"></div>
+  </div>
+
+  <!-- Timer -->
+  <div class="timer">
+    <div class="timer-value">00:42</div>
+    <div class="timer-label">stai registrando</div>
+  </div>
+
+  <!-- Suggerimenti sensoriali -->
+  <div class="sensory-hints">
+    <div class="hint-chip"><i class="ti ti-ear"></i>suoni</div>
+    <div class="hint-chip"><i class="ti ti-eye"></i>immagini</div>
+    <div class="hint-chip"><i class="ti ti-wind"></i>respiro</div>
+  </div>
+
+  <!-- Controlli -->
+  <div class="controls">
+    <div class="control-wrapper">
+      <div class="control-btn"><i class="ti ti-player-pause"></i></div>
+      <span class="label-below">pausa</span>
+    </div>
+
+    <div class="control-wrapper">
+      <div class="stop-btn">
+        <div class="stop-square"></div>
+        <span class="label-below">termina</span>
+      </div>
+    </div>
+
+    <div class="control-wrapper">
+      <div class="control-btn"><i class="ti ti-arrow-back-up"></i></div>
+      <span class="label-below">annulla</span>
+    </div>
+  </div>
+
+  <div class="home-indicator"></div>
+</div>
+</body>
+</html>

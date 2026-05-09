@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bubble Echo — Salva la bolla</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f5f4ef;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.scene {
+  position: relative;
+  width: 380px;
+  height: 760px;
+  background: linear-gradient(180deg, #fbfaf6 0%, #f3f1ea 50%, #ebe7dc 100%);
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.12), 0 0 0 12px #1a1a1a, 0 0 0 14px #2a2a2a;
+}
+
+.notch {
+  position: absolute;
+  top: 12px; left: 50%;
+  transform: translateX(-50%);
+  width: 110px; height: 28px;
+  background: #1a1a1a;
+  border-radius: 20px;
+  z-index: 100;
+}
+.status-bar {
+  position: absolute;
+  top: 18px; left: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 32px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  z-index: 99;
+}
+
+/* Bottone back in alto a sinistra */
+.back-btn {
+  position: absolute;
+  top: 60px; left: 24px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #555;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,0.04);
+  z-index: 50;
+  transition: all 0.2s;
+}
+.back-btn:hover { background: #fff; }
+
+/* Step indicator: 4 di 4 (ultimo step) */
+.step-indicator {
+  position: absolute;
+  top: 64px; right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(8px);
+  padding: 7px 14px;
+  border-radius: 20px;
+  z-index: 50;
+  border: 1px solid rgba(0,0,0,0.04);
+  font-size: 11px;
+  color: #444;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+.step-dots { display: flex; gap: 4px; }
+.step-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.15);
+}
+.step-dot.active { background: #1a1a1a; }
+
+/* Prompt AI in alto */
+.ai-prompt {
+  position: absolute;
+  top: 122px; left: 0; right: 0;
+  padding: 0 36px;
+  text-align: center;
+  z-index: 10;
+}
+.ai-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #8a8474;
+  margin-bottom: 12px;
+  background: rgba(255,255,255,0.55);
+  padding: 5px 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+}
+.ai-text {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 22px;
+  font-style: italic;
+  color: #1a1a1a;
+  line-height: 1.4;
+  letter-spacing: -0.3px;
+}
+
+/* CONTENITORE BOLLA centrale */
+.bubble-stage {
+  position: absolute;
+  top: 250px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 220px;
+  z-index: 5;
+}
+
+/* Aura morbida dietro la bolla */
+.bubble-aura {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 280px; height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,200,215,0.4) 0%, rgba(255,200,215,0.15) 40%, transparent 70%);
+  animation: auraBreath 4s ease-in-out infinite;
+  filter: blur(14px);
+  z-index: 1;
+}
+@keyframes auraBreath {
+  0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+/* La bolla principale - rosa Amore - che respira */
+.new-bubble {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, #ffe0e6, #ffc0cf 60%, #f4a8b8);
+  animation: bubbleBreath 4s ease-in-out infinite;
+  z-index: 5;
+  cursor: default;
+}
+@keyframes bubbleBreath {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.04); }
+}
+
+/* Riflesso luminoso interno */
+.new-bubble::before {
+  content: '';
+  position: absolute;
+  top: 14%; left: 18%;
+  width: 32%; height: 24%;
+  background: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  filter: blur(4px);
+  pointer-events: none;
+}
+/* Ombra interna sotto */
+.new-bubble::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 70% 78%, rgba(0,0,0,0.06), transparent 55%);
+  pointer-events: none;
+}
+
+/* Etichetta emozione dentro la bolla */
+.bubble-label {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  font-family: Georgia, serif;
+  font-style: italic;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(255,255,255,0.6);
+  pointer-events: none;
+}
+.bubble-label .main {
+  font-size: 22px;
+  color: #1a1a1a;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 4px;
+  letter-spacing: 0.3px;
+}
+.bubble-label .secondary {
+  font-size: 11px;
+  color: #6b6555;
+  font-style: italic;
+  display: block;
+  letter-spacing: 0.3px;
+}
+
+/* Indicatore "appena registrata" sopra la bolla, fuori dall'area bolla */
+.fresh-tag {
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 9px;
+  color: #6b6555;
+  font-style: italic;
+  letter-spacing: 0.5px;
+  z-index: 20;
+  border: 1px solid rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.fresh-tag i {
+  color: #f48aa0;
+  font-size: 10px;
+}
+
+/* Campo input nome */
+.name-field {
+  position: absolute;
+  bottom: 178px; left: 30px; right: 30px;
+  z-index: 10;
+}
+.name-field-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #8a8474;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.name-field-input {
+  width: 100%;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  padding: 14px 18px;
+  font-family: Georgia, serif;
+  font-size: 15px;
+  color: #1a1a1a;
+  font-style: italic;
+  outline: none;
+  transition: all 0.2s;
+  text-align: center;
+}
+.name-field-input::placeholder {
+  color: #b8b09a;
+  font-style: italic;
+}
+.name-field-input:focus {
+  background: #fff;
+  border-color: rgba(244,138,160,0.5);
+  box-shadow: 0 0 0 4px rgba(244,138,160,0.1);
+}
+
+/* Hint sotto input */
+.input-hint {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 10px;
+  color: #a09886;
+  font-style: italic;
+  letter-spacing: 0.2px;
+}
+
+/* Bottone salva */
+.save-btn {
+  position: absolute;
+  bottom: 80px; left: 30px; right: 30px;
+  height: 54px;
+  border-radius: 27px;
+  background: linear-gradient(135deg, #1a1a1a, #333);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  transition: all 0.2s;
+  z-index: 10;
+}
+.save-btn:hover { transform: scale(1.02); box-shadow: 0 12px 28px rgba(0,0,0,0.22); }
+.save-btn:active { transform: scale(0.99); }
+.save-btn i { font-size: 18px; }
+
+/* Home indicator */
+.home-indicator {
+  position: absolute;
+  bottom: 6px; left: 50%;
+  transform: translateX(-50%);
+  width: 130px; height: 4px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  z-index: 70;
+  opacity: 0.4;
+}
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="notch"></div>
+  <div class="status-bar">
+    <span>9:41</span>
+    <span><i class="ti ti-wifi"></i> &nbsp;<i class="ti ti-battery-filled"></i></span>
+  </div>
+
+  <div class="back-btn"><i class="ti ti-chevron-left"></i></div>
+
+  <!-- Step indicator: 4 di 4 -->
+  <div class="step-indicator">
+    <div class="step-dots">
+      <div class="step-dot active"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot active"></div>
+    </div>
+    <span>4 di 4</span>
+  </div>
+
+  <!-- Prompt AI -->
+  <div class="ai-prompt">
+    <div class="ai-label">
+      <i class="ti ti-sparkles" style="font-size: 11px;"></i>
+      <span>Echo</span>
+    </div>
+    <div class="ai-text">"Questa bolla è tua.<br>Vuoi darle un nome?"</div>
+  </div>
+
+  <!-- BOLLA CENTRALE che respira -->
+  <div class="bubble-stage">
+    <div class="bubble-aura"></div>
+    <div class="new-bubble"></div>
+    <div class="bubble-label">
+      <span class="main">Amore</span>
+      <span class="secondary">compassione</span>
+    </div>
+    <div class="fresh-tag">
+      <i class="ti ti-sparkles"></i>
+      <span>appena registrata · 02:14</span>
+    </div>
+  </div>
+
+  <!-- Campo nome -->
+  <div class="name-field">
+    <div class="name-field-label">il nome del ricordo</div>
+    <input type="text" class="name-field-input" placeholder="Dai un nome a questo ricordo…">
+    <div class="input-hint">potrai modificarlo in qualsiasi momento</div>
+  </div>
+
+  <!-- Bottone salva -->
+  <div class="save-btn">
+    <i class="ti ti-check"></i>
+    <span>SALVA NEL MIO UNIVERSO</span>
+  </div>
+
+  <div class="home-indicator"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bubble Echo — Archivio universo</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f5f4ef;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+.font-serif { font-family: Georgia, 'Times New Roman', serif; }
+
+@keyframes driftFront1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(10px,-14px); } }
+@keyframes driftFront2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-12px,-10px); } }
+@keyframes driftFront3 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(8px,12px); } }
+@keyframes driftMid1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(6px,-8px); } }
+@keyframes driftMid2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-7px,9px); } }
+@keyframes driftMid3 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(5px,7px); } }
+@keyframes driftBack1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(3px,-4px); } }
+@keyframes driftBack2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-4px,4px); } }
+
+.scene {
+  position: relative;
+  width: 380px;
+  height: 760px;
+  background: linear-gradient(180deg, #fbfaf6 0%, #f3f1ea 50%, #ebe7dc 100%);
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.12), 0 0 0 12px #1a1a1a, 0 0 0 14px #2a2a2a;
+}
+
+.notch {
+  position: absolute;
+  top: 12px; left: 50%;
+  transform: translateX(-50%);
+  width: 110px; height: 28px;
+  background: #1a1a1a;
+  border-radius: 20px;
+  z-index: 100;
+}
+
+.status-bar {
+  position: absolute;
+  top: 18px; left: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 32px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  z-index: 99;
+}
+
+.header {
+  position: absolute;
+  top: 60px; left: 0; right: 0;
+  padding: 14px 24px 8px;
+  z-index: 50;
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.header-title {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  color: #1a1a1a;
+  letter-spacing: -0.3px;
+  flex: 1;
+  text-align: center;
+}
+.header-icons { display: flex; gap: 14px; }
+.header-icon-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.header-icon-btn:hover { background: #fff; }
+
+.header-sub {
+  font-size: 12px;
+  color: #8a8474;
+  font-style: italic;
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+
+.search-bar {
+  position: absolute;
+  top: 142px; left: 24px; right: 24px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 50;
+  border: 1px solid rgba(0,0,0,0.04);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.search-bar i.ti-search { color: #999; font-size: 16px; }
+.search-bar input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: #1a1a1a;
+}
+.search-bar input::placeholder { color: #aaa; font-style: italic; }
+.search-bar .mic-btn {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f4b9c3, #e89bb0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.filters {
+  position: absolute;
+  top: 200px; left: 0; right: 0;
+  padding: 0 24px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  z-index: 50;
+  scrollbar-width: none;
+}
+.filters::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(255,255,255,0.7);
+  color: #555;
+  border: 1px solid rgba(0,0,0,0.04);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.filter-chip.active {
+  background: #1a1a1a;
+  color: #fff;
+  border-color: #1a1a1a;
+}
+.filter-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+.universe {
+  position: absolute;
+  top: 245px; bottom: 30px;
+  left: 0; right: 0;
+  overflow: hidden;
+  perspective: 800px;
+}
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+.bubble::before {
+  content: '';
+  position: absolute;
+  top: 13%; left: 19%;
+  width: 30%; height: 22%;
+  background: rgba(255,255,255,0.85);
+  border-radius: 50%;
+  filter: blur(3px);
+}
+.bubble::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 70% 75%, rgba(0,0,0,0.04), transparent 60%);
+}
+.bubble:hover { transform: scale(1.08); filter: brightness(1.05); z-index: 30 !important; }
+
+.b-front { z-index: 20; filter: blur(0px); opacity: 1; }
+.b-front .label {
+  position: absolute;
+  bottom: -22px; left: 50%;
+  transform: translateX(-50%);
+  font-family: Georgia, serif;
+  font-size: 10px;
+  color: #555;
+  white-space: nowrap;
+  font-style: italic;
+}
+.b-mid { z-index: 10; filter: blur(0.4px); opacity: 0.92; }
+.b-back { z-index: 5; filter: blur(1.4px); opacity: 0.65; }
+
+/* PALETTE PASTELLO UFFICIALE - 7 emozioni dell'Elaborato Draft */
+.c-yellow { background: radial-gradient(circle at 32% 30%, #fff8d6, #ffe9a3 65%, #f6d878); }
+.c-orange { background: radial-gradient(circle at 32% 30%, #ffe6cc, #ffc89e 65%, #f4a878); }
+.c-pink   { background: radial-gradient(circle at 32% 30%, #ffe0e6, #ffc0cf 65%, #f4a8b8); }
+.c-blue   { background: radial-gradient(circle at 32% 30%, #e0f0f8, #b8dcec 65%, #95c4dc); }
+.c-green  { background: radial-gradient(circle at 32% 30%, #e0f0d8, #c0e0b0 65%, #98c890); }
+.c-white  { background: radial-gradient(circle at 32% 30%, #ffffff, #f8f5ee 65%, #ebe5d8); border: 1px solid rgba(180,170,150,0.25); }
+.c-red    { background: radial-gradient(circle at 32% 30%, #ffd8d4, #f8a8a4 65%, #e88884); }
+
+.depth-indicator {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(6px);
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  color: #666;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-style: italic;
+}
+.depth-indicator .dot-row {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.depth-indicator .dot-row span {
+  display: block;
+  border-radius: 50%;
+  background: #f6d878;
+}
+.depth-indicator .d1 { width: 4px; height: 4px; opacity: 0.5; }
+.depth-indicator .d2 { width: 6px; height: 6px; opacity: 0.75; }
+.depth-indicator .d3 { width: 8px; height: 8px; opacity: 1; }
+
+.counter {
+  position: absolute;
+  bottom: 86px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 11px;
+  color: #666;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.counter strong { color: #1a1a1a; font-weight: 600; }
+
+.home-indicator {
+  position: absolute;
+  bottom: 6px; left: 50%;
+  transform: translateX(-50%);
+  width: 130px; height: 4px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  z-index: 70;
+}
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="notch"></div>
+  <div class="status-bar">
+    <span>9:41</span>
+    <span><i class="ti ti-wifi"></i> &nbsp;<i class="ti ti-battery-filled"></i></span>
+  </div>
+
+  <div class="header">
+    <div class="header-row">
+      <div class="header-icon-btn home-btn" title="Torna alla home"><i class="ti ti-home"></i></div>
+      <div class="header-title">Il tuo universo</div>
+      <div class="header-icons">
+        <div class="header-icon-btn"><i class="ti ti-adjustments-horizontal"></i></div>
+        <div class="header-icon-btn"><i class="ti ti-user"></i></div>
+      </div>
+    </div>
+    <div class="header-sub">112 ricordi · ultimo: due ore fa</div>
+  </div>
+
+  <div class="search-bar">
+    <i class="ti ti-search"></i>
+    <input type="text" placeholder="Cerca un ricordo, un'emozione, una persona…">
+    <div class="mic-btn"><i class="ti ti-microphone"></i></div>
+  </div>
+
+  <!-- FILTRI palette ufficiale 7 emozioni -->
+  <div class="filters">
+    <div class="filter-chip active"><i class="ti ti-sparkles" style="font-size: 11px;"></i> Tutte</div>
+    <div class="filter-chip"><span class="filter-dot" style="background:#f6d878"></span>Gioia</div>
+    <div class="filter-chip"><span class="filter-dot" style="background:#f4a878"></span>Calore</div>
+    <div class="filter-chip"><span class="filter-dot" style="background:#e88884"></span>Passione</div>
+    <div class="filter-chip"><span class="filter-dot" style="background:#f4a8b8"></span>Amore</div>
+    <div class="filter-chip"><span class="filter-dot" style="background:#95c4dc"></span>Calma</div>
+    <div class="filter-chip"><span class="filter-dot" style="background:#98c890"></span>Equilibrio</div>
+    <div class="filter-chip"><span class="filter-dot" style="background:#ebe5d8; border: 1px solid rgba(180,170,150,0.4)"></span>Purezza</div>
+  </div>
+
+  <div class="universe">
+
+    <!-- BOLLE FRONT (5 recenti, grandi, con titoli del mondo Molly+Leo) -->
+    <div class="bubble b-front c-yellow" style="width: 96px; height: 96px; top: 220px; left: 30px; animation: driftFront1 6s ease-in-out infinite;">
+      <span class="label">"Mamma" la prima volta</span>
+    </div>
+    <div class="bubble b-front c-pink" style="width: 88px; height: 88px; top: 90px; left: 165px; animation: driftFront2 7s ease-in-out infinite;">
+      <span class="label">Il bagnetto di Leo</span>
+    </div>
+    <div class="bubble b-front c-orange" style="width: 82px; height: 82px; top: 250px; left: 245px; animation: driftFront3 8s ease-in-out infinite;">
+      <span class="label">Caffè prima che si svegli</span>
+    </div>
+    <div class="bubble b-front c-blue" style="width: 76px; height: 76px; top: 60px; left: 50px; animation: driftFront1 9s ease-in-out infinite;">
+      <span class="label">Leo e il mare</span>
+    </div>
+    <div class="bubble b-front c-pink" style="width: 72px; height: 72px; top: 380px; left: 130px; animation: driftFront2 7.5s ease-in-out infinite;">
+      <span class="label">Si è addormentato in braccio</span>
+    </div>
+
+    <!-- BOLLE MID (8 intermedie, tutta la palette rappresentata) -->
+    <div class="bubble b-mid c-green" style="width: 54px; height: 54px; top: 30px; left: 270px; animation: driftMid1 10s ease-in-out infinite;"></div>
+    <div class="bubble b-mid c-white" style="width: 48px; height: 48px; top: 175px; left: 100px; animation: driftMid2 9s ease-in-out infinite;"></div>
+    <div class="bubble b-mid c-yellow" style="width: 50px; height: 50px; top: 195px; left: 295px; animation: driftMid3 11s ease-in-out infinite;"></div>
+    <div class="bubble b-mid c-pink" style="width: 46px; height: 46px; top: 340px; left: 35px; animation: driftMid1 8s ease-in-out infinite;"></div>
+    <div class="bubble b-mid c-orange" style="width: 52px; height: 52px; top: 360px; left: 270px; animation: driftMid2 10s ease-in-out infinite;"></div>
+    <div class="bubble b-mid c-blue" style="width: 44px; height: 44px; top: 145px; left: 240px; animation: driftMid3 9.5s ease-in-out infinite;"></div>
+    <div class="bubble b-mid c-red" style="width: 42px; height: 42px; top: 305px; left: 195px; animation: driftMid1 12s ease-in-out infinite;"></div>
+    <div class="bubble b-mid c-green" style="width: 42px; height: 42px; top: 80px; left: 290px; animation: driftMid2 8.5s ease-in-out infinite;"></div>
+
+    <!-- BOLLE BACK (14 vecchie, piccole, sfocate, tutta la palette) -->
+    <div class="bubble b-back c-yellow" style="width: 28px; height: 28px; top: 50px; left: 130px; animation: driftBack1 14s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-pink" style="width: 32px; height: 32px; top: 110px; left: 240px; animation: driftBack2 13s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-blue" style="width: 26px; height: 26px; top: 140px; left: 60px; animation: driftBack1 15s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-orange" style="width: 30px; height: 30px; top: 200px; left: 200px; animation: driftBack2 12s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-white" style="width: 24px; height: 24px; top: 240px; left: 70px; animation: driftBack1 16s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-orange" style="width: 28px; height: 28px; top: 270px; left: 320px; animation: driftBack2 14s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-pink" style="width: 26px; height: 26px; top: 300px; left: 280px; animation: driftBack1 13.5s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-pink" style="width: 22px; height: 22px; top: 330px; left: 320px; animation: driftBack2 15s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-blue" style="width: 30px; height: 30px; top: 360px; left: 80px; animation: driftBack1 14.5s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-yellow" style="width: 24px; height: 24px; top: 390px; left: 230px; animation: driftBack2 13s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-green" style="width: 28px; height: 28px; top: 25px; left: 200px; animation: driftBack1 16s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-red" style="width: 22px; height: 22px; top: 270px; left: 160px; animation: driftBack2 12.5s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-pink" style="width: 26px; height: 26px; top: 410px; left: 50px; animation: driftBack1 15.5s ease-in-out infinite;"></div>
+    <div class="bubble b-back c-orange" style="width: 20px; height: 20px; top: 420px; left: 310px; animation: driftBack2 14s ease-in-out infinite;"></div>
+
+  </div>
+
+  <div class="home-indicator"></div>
+</div>
+</body>
+</html>
